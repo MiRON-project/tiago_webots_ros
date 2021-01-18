@@ -22,7 +22,7 @@
 namespace tiago_webots_ros {
 
 class RobotTask {
-  std::weak_ptr<ros::NodeHandle> nh_;
+  ros::NodeHandle nh_;
   std::string robot_model_;
   LidarInfo lidar_info_;
   geometry_msgs::PointStamped position_;
@@ -45,7 +45,7 @@ class RobotTask {
   void enableDevices(bool enable = true);
   
   public: 
-    RobotTask(const std::shared_ptr<ros::NodeHandle>& nh);
+    RobotTask(ros::NodeHandle& nh);
     ~RobotTask();
 
     void enableLidar(bool enable);
