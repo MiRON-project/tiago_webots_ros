@@ -70,7 +70,7 @@ void RobotTask::updateOdom() {
     // calculating new position given wheels' encoders
     float dr = (r - right_wheel_.data) * wheel_radius;
     float dl = (l - left_wheel_.data) * wheel_radius;
-    float dyaw = (dr - dl) / (2 * dist_between_wheel);
+    float dyaw = (dr - dl) / dist_between_wheel;
     float ds = (dr + dl) / 2;
     float dx = ds * cos(yaw + dyaw / 2);
     float dy = ds * sin(yaw + dyaw / 2);;
