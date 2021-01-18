@@ -8,16 +8,27 @@
 #include <std_msgs/String.h>
 #include <geometry_msgs/PointStamped.h>
 #include <sensor_msgs/Imu.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/static_transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Quaternion.h>
+#include <gmapping/slam_gmapping.h>
+#include <nav_msgs/Odometry.h>
 
 // std
 #include <memory>
 #include <string>
+#include <thread>
+#include <atomic>
+#include <chrono>        
 
 // webots_ros
 #include <webots_ros/set_int.h>
 #include <webots_ros/lidar_get_info.h>
 #include <webots_ros/lidar_get_layer_point_cloud.h>
 #include <webots_ros/RecognitionObject.h>
+#include <webots_ros/Float64Stamped.h>
 
 namespace tiago_webots_ros {
 
@@ -28,6 +39,7 @@ class RobotTask {
   geometry_msgs::PointStamped position_;
   webots_ros::RecognitionObject objects_;
   sensor_msgs::Imu imu_;
+  nav_msgs::Odometry robot_pose_odom;
 
   // subscribers and services
   ros::ServiceClient lidar_srv_;
@@ -36,9 +48,18 @@ class RobotTask {
   ros::Subscriber gyro_sub_;
   ros::Subscriber wheel_left_sub_;
   ros::Subscriber wheel_right_sub_;
+  ros::Publisher odom_pub;
+  // odom
+  std::thread odom_thread;
+  std::atomic<bool> odom_enabled;
+  webots_ros::Float64Stamped right_wheel_;
+  webots_ros::Float64Stamped left_wheel_;
   
 
   void getRobotModel(const std_msgs::String::ConstPtr& name);
+  void updateRightJoint(const webots_ros::Float64Stamped& joint);
+  void updateLeftJoint(const webots_ros::Float64Stamped& joint);
+  void updateOdom();
   void updatePosition(const geometry_msgs::PointStamped& position);
   void updateGyro(const sensor_msgs::Imu& imu);
   void updateObjects(const webots_ros::RecognitionObject& objects);
