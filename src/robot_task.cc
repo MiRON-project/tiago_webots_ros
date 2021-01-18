@@ -13,6 +13,8 @@ RobotTask::RobotTask(ros::NodeHandle& nh) :
   }
   odom_pub = nh_.advertise<nav_msgs::Odometry>("odom", 50);
   enableDevices(true);
+  setTF();
+  initSlamGmapping();
 }
 
 RobotTask::~RobotTask() {
@@ -41,9 +43,7 @@ void RobotTask::updateLeftJoint(const webots_ros::Float64Stamped& joint) {
 }
 
 void RobotTask::updatePosition(const geometry_msgs::PointStamped& position) {
-  position_.point.x = position.point.x;
-  position_.point.y = position.point.y;
-  position_.point.z = position.point.z;
+  position_ = position;
 }
 
 void RobotTask::updateObjects(const webots_ros::RecognitionObject& objects) {
@@ -137,6 +137,16 @@ void RobotTask::setTF() const {
   transformStamped.transform.rotation.w = q.w();
   br.sendTransform(transformStamped);
 }
+
+void RobotTask::initSlamGmapping() {
+  ros::NodeHandle slam_nh;
+  slam_nh.setParam("scan_topic", robot_model_ + 
+    "/Hokuyo_URG_04LX_UG01/laser_scan/layer0");
+  gm = std::make_unique<SlamGMapping>(nh_, slam_nh);
+  gm->startLiveSlam();
+}
+
+
 void RobotTask::enableLidar(bool enable) {
   webots_ros::set_int msg;
   msg.request.value = enable ? 1 : 0;

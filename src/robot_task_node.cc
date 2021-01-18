@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
   spinner.start();
 
   // Create motion manager and start while loop
-  std::shared_ptr<ros::NodeHandle> nh = std::make_shared<ros::NodeHandle>();
+  ros::NodeHandle nh;
   tiago_webots_ros::RobotTask robot(nh);
   while (!killed) {
     ros::Duration(0.1).sleep();

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.2.0)
+cmake_minimum_required(VERSION 3.10)
 project(tiago_webots_ros)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(catkin REQUIRED COMPONENTS
   backward_ros
+  gmapping
   pluginlib
   roscpp
   sensor_msgs
@@ -20,6 +21,7 @@ catkin_package(
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS
     backward_ros
+    gmapping
     pluginlib
     roscpp
     sensor_msgs

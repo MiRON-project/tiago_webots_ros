@@ -49,6 +49,10 @@ class RobotTask {
   ros::Subscriber wheel_left_sub_;
   ros::Subscriber wheel_right_sub_;
   ros::Publisher odom_pub;
+
+  // slam
+  std::unique_ptr<SlamGMapping> gm;
+
   // odom
   std::thread odom_thread;
   std::atomic<bool> odom_enabled;
@@ -64,6 +68,9 @@ class RobotTask {
   void updateGyro(const sensor_msgs::Imu& imu);
   void updateObjects(const webots_ros::RecognitionObject& objects);
   void enableDevices(bool enable = true);
+
+  void setTF() const;
+  void initSlamGmapping();
   
   public: 
     RobotTask(ros::NodeHandle& nh);

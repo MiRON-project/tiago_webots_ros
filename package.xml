@@ -10,6 +10,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>backward_ros</depend>
+  <depend>gmapping</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
   <depend>sensor_msgs</depend>
