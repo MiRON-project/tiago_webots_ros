@@ -186,10 +186,10 @@ void RobotTask::enableWheel(bool enable) {
   dev.call(msg);
   if (enable) {
     wheel_left_sub_ = nh_.subscribe(robot_model_ + 
-      "/TIAGo_Iron_6661_rsf/wheel_left_joint_sensor/value", 100, 
+      "/wheel_left_joint_sensor/value", 100, 
       &RobotTask::updateLeftJoint, this);
     wheel_right_sub_ = nh_.subscribe(robot_model_ + 
-      "/TIAGo_Iron_6661_rsf/wheel_right_joint_sensor/value", 100, 
+      "/wheel_right_joint_sensor/value", 100, 
       &RobotTask::updateRightJoint, this);
     odom_enabled = true;
     odom_thread = std::thread(&RobotTask::updateOdom, this);
