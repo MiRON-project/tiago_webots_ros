@@ -58,8 +58,6 @@ void RobotTask::updateOdom() {
   geometry_msgs::Point position;
   geometry_msgs::Quaternion orientation;
   tf::TransformBroadcaster odom_broadcaster;
-  float wheel_radius = 0.1;
-  float dist_between_wheel = 0.4044;
   int dt = 35;
   float r = right_wheel_.data;
   float l = left_wheel_.data;
@@ -68,9 +66,9 @@ void RobotTask::updateOdom() {
   while (odom_enabled) {
     std::this_thread::sleep_for(std::chrono::milliseconds(dt));
     // calculating new position given wheels' encoders
-    float dr = (r - right_wheel_.data) * wheel_radius;
-    float dl = (l - left_wheel_.data) * wheel_radius;
-    float dyaw = (dr - dl) / dist_between_wheel;
+    float dr = (right_wheel_.data - r) * wheel_radius_;
+    float dl = (left_wheel_.data - l) * wheel_radius_;
+    float dyaw = (dr - dl) / wheel_distance_;
     float ds = (dr + dl) / 2;
     float dx = ds * cos(yaw + dyaw / 2);
     float dy = ds * sin(yaw + dyaw / 2);;
@@ -107,6 +105,9 @@ void RobotTask::updateOdom() {
     odom.twist.twist.linear.y = dy / dt;
     odom.twist.twist.angular.z = dyaw / dt;
     odom_pub.publish(odom);
+
+    r = right_wheel_.data;
+    l = left_wheel_.data;
   }
 }
 
