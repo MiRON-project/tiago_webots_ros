@@ -41,11 +41,13 @@ void RobotTask::getRobotModel(const std_msgs::String::ConstPtr& name) {
   robot_model_ = name->data;
 }
 
-void RobotTask::updateRightJoint(const webots_ros::Float64Stamped& joint) {
+void RobotTask::updateRightWheelEncoder(const webots_ros::Float64Stamped& joint) 
+{
   right_wheel_ = joint;
 }
 
-void RobotTask::updateLeftJoint(const webots_ros::Float64Stamped& joint) {
+void RobotTask::updateLeftWheelEncoder(const webots_ros::Float64Stamped& joint) 
+{
   left_wheel_ = joint;
 }
 
@@ -82,11 +84,12 @@ void RobotTask::updatePosition(const geometry_msgs::PointStamped& position) {
   position_ = position;
 }
 
-void RobotTask::updateObjects(const webots_ros::RecognitionObject& objects) {
+void RobotTask::updateRecognizedObjects(
+    const webots_ros::RecognitionObject& objects) {
   objects_ = objects;
 }
 
-void RobotTask::updateGyro(const sensor_msgs::Imu& imu) {
+void RobotTask::updateOrientation(const sensor_msgs::Imu& imu) {
   imu_ = imu;
 }
 
@@ -224,10 +227,10 @@ void RobotTask::enableWheel(bool enable) {
   if (enable) {
     wheel_left_sub_ = nh_.subscribe(robot_model_ + 
       "/wheel_left_joint_sensor/value", 100, 
-      &RobotTask::updateLeftJoint, this);
+      &RobotTask::updateLeftWheelEncoder, this);
     wheel_right_sub_ = nh_.subscribe(robot_model_ + 
       "/wheel_right_joint_sensor/value", 100, 
-      &RobotTask::updateRightJoint, this);
+      &RobotTask::updateRightWheelEncoder, this);
 
     
     // set velocity to zero
@@ -280,7 +283,8 @@ void RobotTask::enableCamera(bool enable) {
 
   if (enable) {
     recognition_sub_ = nh_.subscribe(robot_model_ + 
-      "/camera_2D/recognition_objects", 100, &RobotTask::updateObjects, this);
+      "/camera_2D/recognition_objects", 100, &RobotTask::updateRecognizedObjects,
+      this);
   }
   else {
     recognition_sub_.shutdown();
@@ -312,7 +316,7 @@ void RobotTask::enableGyro(bool enable) {
   
   if (enable) {
     gyro_sub_ = nh_.subscribe(robot_model_ + "/gyro/values", 100, 
-      &RobotTask::updateGyro, this);
+      &RobotTask::updateOrientation, this);
   }
   else {
     gyro_sub_.shutdown();

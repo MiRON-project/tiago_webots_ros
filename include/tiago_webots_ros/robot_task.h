@@ -70,18 +70,64 @@ class RobotTask {
   webots_ros::Float64Stamped right_wheel_;
   webots_ros::Float64Stamped left_wheel_;
   
-
+  /** Get the robot name. It is needed to enable and get all services/topics 
+   * info. This is a subscription to the topic /model_name.
+   * @param name the topic output (name of the robot)
+   */
   void getRobotModel(const std_msgs::String::ConstPtr& name);
-  void updateRightJoint(const webots_ros::Float64Stamped& joint);
-  void updateLeftJoint(const webots_ros::Float64Stamped& joint);
+  
+  /** Update the right wheel encoder. A subscription to the right wheel sensor
+   * topic.
+   * @param joint the encoder info
+   */
+  void updateRightWheelEncoder(const webots_ros::Float64Stamped& joint);
+  
+  /** Update the left wheel encoder. A subscription to the right wheel sensor
+   * topic.
+   * @param joint the encoder info
+   */
+  void updateLeftWheelEncoder(const webots_ros::Float64Stamped& joint);
+  
+  /** Update the odometry, publishing the result to the /odom topic. Simple math
+   * to convert the encoders' info to robot displacement.
+   */
   void updateOdom();
+  
+  /** Update the robot's velocity. A subscription to the cmd_vel topic, updating
+   * the velocity command to the robot's wheels.
+   * @param vel the velocity to be changed
+   */
   void updateVel(const geometry_msgs::Twist& vel);
+  
+  /** Update the robot's global position. A subscription to the gps topic. This 
+   * should not be used for indoor environment.
+   * @param position that comes from the gps sensor
+   */
   void updatePosition(const geometry_msgs::PointStamped& position);
-  void updateGyro(const sensor_msgs::Imu& imu);
-  void updateObjects(const webots_ros::RecognitionObject& objects);
+  
+  /** Update the robot's orientation. A subscription to the gyro topic.
+   * @param imu info that comes from the gyro sensor
+   */
+  void updateOrientation(const sensor_msgs::Imu& imu);
+  
+  /** Update the objects on robot's sight. A subscription to recognized objects.
+   * Webots has some special objects that are automatically recognized.
+   * @param objects info that comes recognition topic
+   */
+  void updateRecognizedObjects(const webots_ros::RecognitionObject& objects);
+  
+  /** A method to enable all useful devices for autonomous navigation.
+   * 
+   */ 
   void enableDevices(bool enable = true);
 
+  
+  /** Start TF base_link
+   */ 
   void setTF() const;
+  
+  /** Start GMapping for initial environment mapping
+   */ 
   void initSlamGmapping();
   
   public: 
