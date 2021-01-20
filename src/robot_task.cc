@@ -3,7 +3,12 @@
 namespace tiago_webots_ros {
 
 RobotTask::RobotTask(ros::NodeHandle& nh) :
-    nh_(nh) {
+    nh_(nh),
+    wheel_distance_(0.4044),
+    wheel_radius_(0.1),
+    max_vel_(0),
+    step_(1) {
+  
   auto sub = nh_.subscribe("/model_name", 100, &RobotTask::getRobotModel, 
     this);
   
@@ -11,6 +16,7 @@ RobotTask::RobotTask(ros::NodeHandle& nh) :
     ros::spinOnce();
     ros::Duration(0.1).sleep();
   }
+
   odom_pub = nh_.advertise<nav_msgs::Odometry>("odom", 50);
   enableDevices(true);
   setTF();
@@ -27,6 +33,7 @@ RobotTask::~RobotTask() {
   odom_enabled = false;
   if (odom_thread.joinable())
     odom_thread.join();
+  cmd_vel_sub_.shutdown();
 }
 
 
@@ -40,6 +47,35 @@ void RobotTask::updateRightJoint(const webots_ros::Float64Stamped& joint) {
 
 void RobotTask::updateLeftJoint(const webots_ros::Float64Stamped& joint) {
   left_wheel_ = joint;
+}
+
+void RobotTask::updateVel(const geometry_msgs::Twist& vel) {
+  vel_ = vel;
+  float vx = vel.linear.x;
+  float vy = vel.linear.y;
+  float speed = sqrt(vx * vx + vy * vy);
+  float omega = vel.angular.z;
+  
+  float right_wheel_vel = (wheel_distance_ * omega + 2 * speed) / 2;
+  float left_wheel_vel = (2 * speed - omega * wheel_distance_) / 2;
+
+  if (abs(left_wheel_vel) > max_vel_)
+    left_wheel_vel = ((left_wheel_vel > 0) - (left_wheel_vel < 0)) * 
+      max_vel_;
+  if (abs(right_wheel_vel) > max_vel_)
+    right_wheel_vel = ((right_wheel_vel > 0) - (right_wheel_vel < 0)) * 
+      max_vel_;
+  
+  webots_ros::set_float msg_2;
+  msg_2.request.value = right_wheel_vel;
+  auto dev = nh_.serviceClient<webots_ros::set_float>(robot_model_ + 
+    "/wheel_right_joint/set_velocity");
+  dev.call(msg_2);
+
+  msg_2.request.value = left_wheel_vel;
+  dev = nh_.serviceClient<webots_ros::set_float>(robot_model_ + 
+    "/wheel_left_joint/set_velocity");
+  dev.call(msg_2);
 }
 
 void RobotTask::updatePosition(const geometry_msgs::PointStamped& position) {
@@ -150,7 +186,7 @@ void RobotTask::initSlamGmapping() {
 
 void RobotTask::enableLidar(bool enable) {
   webots_ros::set_int msg;
-  msg.request.value = enable ? 1 : 0;
+  msg.request.value = enable ? step_ : 0;
   auto dev = nh_.serviceClient<webots_ros::set_int>(robot_model_ + 
     "/Hokuyo_URG_04LX_UG01/enable");
   dev.call(msg);
@@ -178,7 +214,7 @@ void RobotTask::enableLidar(bool enable) {
 
 void RobotTask::enableWheel(bool enable) {
   webots_ros::set_int msg;
-  msg.request.value = enable ? 1 : 0;
+  msg.request.value = enable ? step_ : 0;
   auto dev = nh_.serviceClient<webots_ros::set_int>(robot_model_ + 
     "/wheel_right_joint_sensor/enable");
   dev.call(msg);
@@ -192,12 +228,39 @@ void RobotTask::enableWheel(bool enable) {
     wheel_right_sub_ = nh_.subscribe(robot_model_ + 
       "/wheel_right_joint_sensor/value", 100, 
       &RobotTask::updateRightJoint, this);
+
+    
+    // set velocity to zero
+    geometry_msgs::Twist vel;
+    vel.linear.x = 0;
+    vel.linear.y = 0;
+    vel.angular.z = 0;
+    updateVel(vel);
+    
+    // set the motors to veloctiy control
+    webots_ros::set_float wheelSrv;
+    wheelSrv.request.value = INFINITY;
+    auto leftWheelPositionClient =
+      nh_.serviceClient<webots_ros::set_float>(robot_model_ + 
+      "/wheel_left_joint/set_position");
+    leftWheelPositionClient.call(wheelSrv);
+    auto rightWheelPositionClient =
+      nh_.serviceClient<webots_ros::set_float>(robot_model_ + 
+      "/wheel_right_joint/set_position");
+    rightWheelPositionClient.call(wheelSrv);
+
+    // add subscriber to cmd_vel
+    cmd_vel_sub_ = nh_.subscribe(robot_model_ + "/cmd_vel", 100, 
+      &RobotTask::updateVel, this);
+    
     odom_enabled = true;
     odom_thread = std::thread(&RobotTask::updateOdom, this);
+    getMaxVelocity();
   }
   else {
     wheel_left_sub_.shutdown();
     wheel_right_sub_.shutdown();
+    cmd_vel_sub_.shutdown();
     odom_enabled = false;
     if (odom_thread.joinable())
       odom_thread.join();
@@ -206,7 +269,7 @@ void RobotTask::enableWheel(bool enable) {
 
 void RobotTask::enableCamera(bool enable) {
   webots_ros::set_int msg;
-  msg.request.value = enable ? 1 : 0;
+  msg.request.value = enable ? step_ : 0;
   auto dev = nh_.serviceClient<webots_ros::set_int>(robot_model_ + 
     "/camera_2D/enable");
   dev.call(msg);
@@ -226,7 +289,7 @@ void RobotTask::enableCamera(bool enable) {
 
 void RobotTask::enableGPS(bool enable) {
   webots_ros::set_int msg;
-  msg.request.value = enable ? 1 : 0;
+  msg.request.value = enable ? step_ : 0;
   auto dev = nh_.serviceClient<webots_ros::set_int>(robot_model_ + 
     "/gps/enable");
   dev.call(msg);
@@ -242,7 +305,7 @@ void RobotTask::enableGPS(bool enable) {
 
 void RobotTask::enableGyro(bool enable) {
   webots_ros::set_int msg;
-  msg.request.value = enable ? 1 : 0;
+  msg.request.value = enable ? step_ : 0;
   auto dev = nh_.serviceClient<webots_ros::set_int>(robot_model_ + 
     "/gyro/enable");
   dev.call(msg);
@@ -254,6 +317,23 @@ void RobotTask::enableGyro(bool enable) {
   else {
     gyro_sub_.shutdown();
   }
+}
+
+void RobotTask::getMaxVelocity() {
+  webots_ros::get_float msg;
+  msg.request.ask = false;
+  auto dev = nh_.serviceClient<webots_ros::get_float>(robot_model_ + 
+    "/wheel_left_joint/get_max_velocity");
+  dev.call(msg);
+  ros::spinOnce();
+  max_vel_ = msg.response.value;
+  
+  dev = nh_.serviceClient<webots_ros::get_float>(robot_model_ + 
+    "/wheel_right_joint/get_max_velocity");
+  dev.call(msg);
+  ros::spinOnce();
+
+  max_vel_ = std::min((float)msg.response.value, max_vel_);
 }
 
 } // end namespace tiago_webots_ros

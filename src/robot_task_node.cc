@@ -26,7 +26,6 @@ int main(int argc, char **argv) {
   ros::AsyncSpinner spinner(0);
   spinner.start();
 
-  // Create motion manager and start while loop
   ros::NodeHandle nh;
   tiago_webots_ros::RobotTask robot(nh);
   while (!killed) {
