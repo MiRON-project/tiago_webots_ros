@@ -33,6 +33,7 @@
 #include <webots_ros/Float64Stamped.h>
 #include <webots_ros/get_float.h>
 #include <webots_ros/set_float.h>
+#include <webots_ros/Int32Stamped.h>
 
 namespace tiago_webots_ros {
 
@@ -59,6 +60,7 @@ class RobotTask {
   ros::Subscriber wheel_left_sub_;
   ros::Subscriber wheel_right_sub_;
   ros::Subscriber cmd_vel_sub_;
+  ros::Subscriber keyboard_sub_;
   ros::Publisher odom_pub;
 
   // slam
@@ -115,6 +117,12 @@ class RobotTask {
    * @param objects info that comes recognition topic
    */
   void updateRecognizedObjects(const webots_ros::RecognitionObject& objects);
+
+  /** Update the robot's vel given the pushed keyboard key.
+   * w, d, s, a and space to stop the robot.
+   * @param data keyboard's pushed key
+   */
+  void updateKeyboard(const webots_ros::Int32Stamped& data);
   
   /** A method to enable all useful devices for autonomous navigation.
    * 
@@ -139,6 +147,7 @@ class RobotTask {
     void enableGPS(bool enable);
     void enableGyro(bool enable);
     void enableWheel(bool enable);
+    void enableKeyboard(bool enable);
     void getMaxVelocity();
 };
 

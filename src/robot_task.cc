@@ -150,6 +150,30 @@ void RobotTask::updateOdom() {
   }
 }
 
+void RobotTask::updateKeyboard(const webots_ros::Int32Stamped& data) {
+  switch (data.data)
+  {
+    case 87:
+      vel_.linear.x += .1;
+      break;
+    case 68:
+      vel_.angular.z += -.5;
+      break;
+    case 83:
+      vel_.linear.x += -.1;
+      break;
+    case 65:
+      vel_.angular.z += .5;
+      break;
+    case 32:
+      vel_.linear.x = 0;
+      vel_.linear.y = 0;
+      vel_.angular.z = 0;
+      break;
+  }
+  updateVel(vel_);
+}
+
 
 void RobotTask::enableDevices(bool enable) {
   enableLidar(enable);
@@ -157,6 +181,7 @@ void RobotTask::enableDevices(bool enable) {
   enableCamera(enable);
   enableGPS(enable);
   enableGyro(enable);
+  enableKeyboard(enable);
 }
 
 void RobotTask::setTF() const {
@@ -320,6 +345,22 @@ void RobotTask::enableGyro(bool enable) {
   }
   else {
     gyro_sub_.shutdown();
+  }
+}
+
+void RobotTask::enableKeyboard(bool enable) {
+  webots_ros::set_int msg;
+  msg.request.value = enable ? step_ : 0;
+  auto dev = nh_.serviceClient<webots_ros::set_int>(robot_model_ + 
+    "/keyboard/enable");
+  dev.call(msg);
+  
+  if (enable) {
+    keyboard_sub_ = nh_.subscribe(robot_model_ + "/keyboard/key", 100, 
+      &RobotTask::updateKeyboard, this);
+  }
+  else {
+    keyboard_sub_.shutdown();
   }
 }
 
