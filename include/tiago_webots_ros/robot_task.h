@@ -8,6 +8,7 @@
 #include <std_msgs/String.h>
 #include <geometry_msgs/PointStamped.h>
 #include <sensor_msgs/Imu.h>
+#include <sensor_msgs/LaserScan.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
@@ -24,6 +25,8 @@
 #include <atomic>
 #include <chrono>     
 #include <math.h>   
+#include <mutex>
+#include <algorithm>
 
 // webots_ros
 #include <webots_ros/set_int.h>
@@ -54,6 +57,8 @@ class RobotTask {
 
   // subscribers and services
   ros::ServiceClient lidar_srv_;
+  ros::Subscriber lidar_sub_;
+  ros::Publisher laser_pub_;
   ros::Subscriber recognition_sub_;
   ros::Subscriber gps_sub_;
   ros::Subscriber gyro_sub_;
@@ -78,6 +83,11 @@ class RobotTask {
    * @param name the topic output (name of the robot)
    */
   void getRobotModel(const std_msgs::String::ConstPtr& name);
+  
+  /** It updates the scan info. A subscription to the Laser sensor topic.
+   * @param scan the scan coming from the range sensor
+   */
+  void updateLaserScan(const sensor_msgs::LaserScan& scan);
   
   /** Update the right wheel encoder. A subscription to the right wheel sensor
    * topic.

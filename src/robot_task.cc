@@ -36,12 +36,23 @@ RobotTask::~RobotTask() {
   if (odom_thread.joinable())
     odom_thread.join();
   cmd_vel_sub_.shutdown();
+  lidar_sub_.shutdown();
+  laser_pub_.shutdown();
 }
 
 
 void RobotTask::getRobotModel(const std_msgs::String::ConstPtr& name) {
   robot_model_ = name->data;
 }
+
+void RobotTask::updateLaserScan(const sensor_msgs::LaserScan& scan) {
+  sensor_msgs::LaserScan msg = scan;
+  std::vector<float> ranges = msg.ranges;
+  std::reverse(ranges.begin(), ranges.end());
+  msg.ranges = ranges;
+  laser_pub_.publish(msg);
+}
+
 
 void RobotTask::updateRightWheelEncoder(const webots_ros::Float64Stamped& joint) 
 {
@@ -175,9 +186,9 @@ void RobotTask::updateKeyboard(const webots_ros::Int32Stamped& data) {
 
 void RobotTask::enableDevices(bool enable) {
   enableLidar(enable);
+  enableGPS(enable);
   enableWheel(enable);
   enableCamera(enable);
-  enableGPS(enable);
   enableGyro(enable);
   enableKeyboard(enable);
 }
@@ -203,8 +214,6 @@ void RobotTask::setTF() const {
 
 void RobotTask::initSlamGmapping() {
   ros::NodeHandle slam_nh;
-  slam_nh.setParam("scan_topic", robot_model_ + 
-    "/Hokuyo_URG_04LX_UG01/laser_scan/layer0");
   gm = std::make_unique<SlamGMapping>(nh_, slam_nh);
   gm->startLiveSlam();
 }
@@ -233,9 +242,13 @@ void RobotTask::enableLidar(bool enable) {
     lidar_info_.minRange = info.response.minRange;
     lidar_info_.numberOfLayers = info.response.numberOfLayers;
     lidar_info_.verticalFov = info.response.verticalFov;
-    lidar_srv_ = nh_.serviceClient<webots_ros::lidar_get_layer_point_cloud>(
-      robot_model_ + "/Hokuyo_URG_04LX_UG01/lidar_get_layer_point_cloud");
+    lidar_sub_ = nh_.subscribe(robot_model_ + 
+      "/Hokuyo_URG_04LX_UG01/laser_scan/layer0", 100, 
+      &RobotTask::updateLaserScan, this);
+    laser_pub_ = nh_.advertise<sensor_msgs::LaserScan>("/scan", 100);
   }
+  else
+    lidar_sub_.shutdown();
 }
 
 void RobotTask::enableWheel(bool enable) {
