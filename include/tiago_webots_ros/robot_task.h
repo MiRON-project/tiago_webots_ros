@@ -42,7 +42,8 @@ class RobotTask {
   ros::NodeHandle nh_;
   std::string robot_model_;
   LidarInfo lidar_info_;
-  geometry_msgs::PointStamped position_;
+  geometry_msgs::PointStamped gps_position_;
+  nav_msgs::Odometry robot_pose_odom_;
   webots_ros::RecognitionObject objects_;
   sensor_msgs::Imu imu_;
   geometry_msgs::Twist vel_;
@@ -50,7 +51,6 @@ class RobotTask {
   float wheel_radius_;
   float max_vel_;
   int step_;
-  nav_msgs::Odometry robot_pose_odom;
 
   // subscribers and services
   ros::ServiceClient lidar_srv_;
@@ -69,6 +69,7 @@ class RobotTask {
   // odom
   std::thread odom_thread;
   std::atomic<bool> odom_enabled;
+  std::mutex odom_mutex_;
   webots_ros::Float64Stamped right_wheel_;
   webots_ros::Float64Stamped left_wheel_;
   
@@ -105,7 +106,7 @@ class RobotTask {
    * should not be used for indoor environment.
    * @param position that comes from the gps sensor
    */
-  void updatePosition(const geometry_msgs::PointStamped& position);
+  void updateGPSPosition(const geometry_msgs::PointStamped& position);
   
   /** Update the robot's orientation. A subscription to the gyro topic.
    * @param imu info that comes from the gyro sensor
@@ -148,7 +149,19 @@ class RobotTask {
     void enableGyro(bool enable);
     void enableWheel(bool enable);
     void enableKeyboard(bool enable);
-    void getMaxVelocity();
+    
+    /** It returns the maximum velocity */ 
+    float getMaxVelocity();
+
+    /** Set the robot's global position 
+     * @param position the global position
+     */ 
+    void setPosition(const geometry_msgs::PointStamped& position);
+    
+    /** Set the robot's global position using the GPS sensor if available.
+     * It does not uptade the robot's position otherwise.
+     */ 
+    void setPosition();
 };
 
 }

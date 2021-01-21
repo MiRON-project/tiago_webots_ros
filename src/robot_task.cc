@@ -7,7 +7,9 @@ RobotTask::RobotTask(ros::NodeHandle& nh) :
     wheel_distance_(0.4044),
     wheel_radius_(0.1),
     max_vel_(0),
-    step_(1) {
+    step_(1),
+    gps_position_(geometry_msgs::PointStamped()),
+    robot_pose_odom_(nav_msgs::Odometry()) {
   
   auto sub = nh_.subscribe("/model_name", 100, &RobotTask::getRobotModel, 
     this);
@@ -80,8 +82,8 @@ void RobotTask::updateVel(const geometry_msgs::Twist& vel) {
   dev.call(msg_2);
 }
 
-void RobotTask::updatePosition(const geometry_msgs::PointStamped& position) {
-  position_ = position;
+void RobotTask::updateGPSPosition(const geometry_msgs::PointStamped& position) {
+  gps_position_ = position;
 }
 
 void RobotTask::updateRecognizedObjects(
@@ -94,8 +96,10 @@ void RobotTask::updateOrientation(const sensor_msgs::Imu& imu) {
 }
 
 void RobotTask::updateOdom() {
-  geometry_msgs::Point position;
-  geometry_msgs::Quaternion orientation;
+  robot_pose_odom_.header.frame_id = "odom";
+  robot_pose_odom_.child_frame_id = "base_link";
+  robot_pose_odom_.pose.pose.position.z = 0;
+
   tf::TransformBroadcaster odom_broadcaster;
   int dt = 35;
   float r = right_wheel_.data;
@@ -113,38 +117,32 @@ void RobotTask::updateOdom() {
     float dy = ds * sin(yaw + dyaw / 2);;
     
     // update position
-    position.x += dx;
-    position.y += dy;
-    yaw += dyaw;
-    orientation = tf::createQuaternionMsgFromYaw(yaw);
-    auto current_time = ros::Time::now();
+    {
+      std::lock_guard<std::mutex> lock(odom_mutex_);
+      robot_pose_odom_.pose.pose.position.x += dx;
+      robot_pose_odom_.pose.pose.position.y += dy;
+      yaw += dyaw;
+      robot_pose_odom_.pose.pose.orientation = 
+        tf::createQuaternionMsgFromYaw(yaw);
+      robot_pose_odom_.header.stamp = ros::Time::now();;
 
-    // publishing tf
-    geometry_msgs::TransformStamped odom_trans;
-    odom_trans.header.stamp = current_time;
-    odom_trans.header.frame_id = "odom";
-    odom_trans.child_frame_id = "base_link";
+      // publishing tf
+      geometry_msgs::TransformStamped odom_trans;
+      odom_trans.header.stamp = robot_pose_odom_.header.stamp;
+      odom_trans.header.frame_id = "odom";
+      odom_trans.child_frame_id = "base_link";
+      odom_trans.transform.translation.x = robot_pose_odom_.pose.pose.position.x;
+      odom_trans.transform.translation.y = robot_pose_odom_.pose.pose.position.y;
+      odom_trans.transform.translation.z = 0.0;
+      odom_trans.transform.rotation = robot_pose_odom_.pose.pose.orientation;
+      odom_broadcaster.sendTransform(odom_trans);
 
-    odom_trans.transform.translation.x = position.x;
-    odom_trans.transform.translation.y = position.y;
-    odom_trans.transform.translation.z = 0.0;
-    odom_trans.transform.rotation = orientation;
-    odom_broadcaster.sendTransform(odom_trans);
-
-    //publishing the odometry message over ROS
-    nav_msgs::Odometry odom;
-    odom.header.stamp = current_time;
-    odom.header.frame_id = "odom";
-    odom.child_frame_id = "base_link";
-    odom.pose.pose.position.x = position.x;
-    odom.pose.pose.position.y = position.y;
-    odom.pose.pose.position.z = 0.0;
-    odom.pose.pose.orientation = orientation;
-    odom.twist.twist.linear.x = dx / dt;
-    odom.twist.twist.linear.y = dy / dt;
-    odom.twist.twist.angular.z = dyaw / dt;
-    odom_pub.publish(odom);
-
+      //publishing the odometry message over ROS
+      robot_pose_odom_.twist.twist.linear.x = dx / dt;
+      robot_pose_odom_.twist.twist.linear.y = dy / dt;
+      robot_pose_odom_.twist.twist.angular.z = dyaw / dt;
+      odom_pub.publish(robot_pose_odom_);
+    }
     r = right_wheel_.data;
     l = left_wheel_.data;
   }
@@ -325,7 +323,9 @@ void RobotTask::enableGPS(bool enable) {
 
   if (enable) {
     gps_sub_ = nh_.subscribe(robot_model_ + "/gps/values", 100, 
-      &RobotTask::updatePosition, this);
+      &RobotTask::updateGPSPosition, this);
+    ros::Duration(1).sleep();
+    setPosition();
   }
   else {
     gps_sub_.shutdown();
@@ -364,7 +364,7 @@ void RobotTask::enableKeyboard(bool enable) {
   }
 }
 
-void RobotTask::getMaxVelocity() {
+float RobotTask::getMaxVelocity() {
   webots_ros::get_float msg;
   msg.request.ask = false;
   auto dev = nh_.serviceClient<webots_ros::get_float>(robot_model_ + 
@@ -379,6 +379,23 @@ void RobotTask::getMaxVelocity() {
   ros::spinOnce();
 
   max_vel_ = std::min((float)msg.response.value, max_vel_);
+  return max_vel_;
+}
+
+void RobotTask::setPosition(const geometry_msgs::PointStamped& position) {
+  std::lock_guard<std::mutex> lock(odom_mutex_);
+  robot_pose_odom_.pose.pose.position.x = position.point.x;
+  robot_pose_odom_.pose.pose.position.y = position.point.y;
+  robot_pose_odom_.pose.pose.position.z = position.point.z;
+  robot_pose_odom_.header.stamp = ros::Time::now();
+}
+
+void RobotTask::setPosition() {
+  std::lock_guard<std::mutex> lock(odom_mutex_);
+  robot_pose_odom_.pose.pose.position.x = gps_position_.point.x;
+  robot_pose_odom_.pose.pose.position.y = gps_position_.point.y;
+  robot_pose_odom_.pose.pose.position.z = gps_position_.point.z;
+  robot_pose_odom_.header.stamp = ros::Time::now();
 }
 
 } // end namespace tiago_webots_ros

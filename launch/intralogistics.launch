@@ -4,5 +4,5 @@
   <include file="$(find webots_ros)/launch/webots.launch">
     <arg name="world" value="$(find tiago_webots_ros)/worlds/intralogistics_2.wbt"/>
   </include>
-  <node pkg="tiago_webots_ros" type="robot_task_node" name="robot" output="screen"/>
+  <node pkg="tiago_webots_ros" type="robot_task_node" name="robot"/>
 </launch>
