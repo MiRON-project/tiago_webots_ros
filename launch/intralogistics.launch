@@ -4,5 +4,12 @@
   <include file="$(find webots_ros)/launch/webots.launch">
     <arg name="world" value="$(find tiago_webots_ros)/worlds/intralogistics_2.wbt"/>
   </include>
+  <include file="$(find tiago_webots_ros)/launch/map_server.launch"/>
   <node pkg="tiago_webots_ros" type="robot_task_node" name="robot"/>
+  <include file="$(find tiago_webots_ros)/launch/iris_lama_localization.launch"/>
+  <!--
+  <include file="$(find tiago_webots_ros)/launch/gmapping.launch"/>
+  <include file="$(find tiago_webots_ros)/launch/iris_lama_mapping.launch"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find tiago_webots_ros)/config/tiago.rviz"/>
+  -->
 </launch>

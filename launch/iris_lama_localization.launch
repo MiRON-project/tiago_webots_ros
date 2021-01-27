@@ -1,0 +1,23 @@
+<launch>
+    <node pkg="iris_lama_ros" type="loc2d_ros" name="iris_lama_localization">
+    <param name="global_frame_id" value="map"/>
+    <param name="odom_frame_id" value="odom"/>
+    <param name="base_frame_id" value="base_link"/>
+    <param name="scan_topic" value="scan"/>
+    <param name="initial_pos_x" value="-7.7181746642"/>
+    <param name="initial_pos_y" value="0.0855443505936"/>
+    <param name="initial_pos_a" value="0"/>
+    <param name="d_thresh" value="0.01"/>
+    <param name="a_thresh" value="0.25"/>
+    <param name="l2_max" value="0.5"/>
+    <param name="resolution" value="0.05"/>
+    <param name="patch_size" value="32"/>
+    <param name="strategy" value="gm"/>
+    <param name="use_map_topic" value="false"/>
+    <param name="first_map_only" value="false"/>
+    <param name="use_pose_on_new_map" value="false"/>
+    <param name="force_update_on_initial_pose" value="false"/>
+    <param name="gloc_particles" value="3000"/>
+    <param name="gloc_iters" value="20"/>
+    </node>
+</launch>
