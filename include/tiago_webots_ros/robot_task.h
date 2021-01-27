@@ -145,10 +145,6 @@ class RobotTask {
    */ 
   void setTF() const;
   
-  /** Start GMapping for initial environment mapping
-   */ 
-  void initSlamGmapping();
-  
   public: 
     RobotTask(ros::NodeHandle& nh);
     ~RobotTask();

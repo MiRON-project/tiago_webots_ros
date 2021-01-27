@@ -22,7 +22,6 @@ RobotTask::RobotTask(ros::NodeHandle& nh) :
   odom_pub = nh_.advertise<nav_msgs::Odometry>("odom", 50);
   enableDevices(true);
   setTF();
-  initSlamGmapping();
 }
 
 RobotTask::~RobotTask() {
@@ -183,7 +182,6 @@ void RobotTask::updateKeyboard(const webots_ros::Int32Stamped& data) {
   updateVel(vel_);
 }
 
-
 void RobotTask::enableDevices(bool enable) {
   enableLidar(enable);
   enableGPS(enable);
@@ -211,13 +209,6 @@ void RobotTask::setTF() const {
   transformStamped.transform.rotation.w = q.w();
   br.sendTransform(transformStamped);
 }
-
-void RobotTask::initSlamGmapping() {
-  ros::NodeHandle slam_nh;
-  gm = std::make_unique<SlamGMapping>(nh_, slam_nh);
-  gm->startLiveSlam();
-}
-
 
 void RobotTask::enableLidar(bool enable) {
   webots_ros::set_int msg;
@@ -406,8 +397,8 @@ void RobotTask::setPosition(const geometry_msgs::PointStamped& position) {
 void RobotTask::setPosition() {
   std::lock_guard<std::mutex> lock(odom_mutex_);
   robot_pose_odom_.pose.pose.position.x = gps_position_.point.x;
-  robot_pose_odom_.pose.pose.position.y = gps_position_.point.y;
-  robot_pose_odom_.pose.pose.position.z = gps_position_.point.z;
+  robot_pose_odom_.pose.pose.position.y = - gps_position_.point.z;
+  robot_pose_odom_.pose.pose.position.z = gps_position_.point.y;
   robot_pose_odom_.header.stamp = ros::Time::now();
 }
 
