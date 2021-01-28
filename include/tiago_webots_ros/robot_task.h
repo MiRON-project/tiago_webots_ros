@@ -12,6 +12,7 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/Twist.h>
@@ -59,6 +60,7 @@ class RobotTask {
   ros::ServiceClient lidar_srv_;
   ros::Subscriber lidar_sub_;
   ros::Publisher laser_pub_;
+  ros::Publisher initial_pose_pub_;
   ros::Subscriber recognition_sub_;
   ros::Subscriber gps_sub_;
   ros::Subscriber gyro_sub_;

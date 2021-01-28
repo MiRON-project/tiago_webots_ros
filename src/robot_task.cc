@@ -208,6 +208,9 @@ void RobotTask::setTF() const {
   transformStamped.transform.rotation.z = q.z();
   transformStamped.transform.rotation.w = q.w();
   br.sendTransform(transformStamped);
+
+  transformStamped.child_frame_id = robot_model_ + "/camera_2D";
+  br.sendTransform(transformStamped);
 }
 
 void RobotTask::enableLidar(bool enable) {
@@ -399,7 +402,23 @@ void RobotTask::setPosition() {
   robot_pose_odom_.pose.pose.position.x = gps_position_.point.x;
   robot_pose_odom_.pose.pose.position.y = - gps_position_.point.z;
   robot_pose_odom_.pose.pose.position.z = gps_position_.point.y;
+  geometry_msgs::Quaternion q;
+  q.w = 1;
+  q.x = 0;
+  q.y = 0;
+  q.z = 0;
+  robot_pose_odom_.pose.pose.orientation = q;
   robot_pose_odom_.header.stamp = ros::Time::now();
+
+  geometry_msgs::PoseWithCovarianceStamped pose;
+  pose.header.stamp = robot_pose_odom_.header.stamp;
+  pose.pose.pose.position.x = robot_pose_odom_.pose.pose.position.x;
+  pose.pose.pose.position.y = robot_pose_odom_.pose.pose.position.y;
+  pose.pose.pose.position.z = robot_pose_odom_.pose.pose.position.z;
+  pose.pose.pose.orientation = q;
+  initial_pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(
+    "/initialpose", 1, true);
+  initial_pose_pub_.publish(pose);
 }
 
 } // end namespace tiago_webots_ros
