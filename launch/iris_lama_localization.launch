@@ -12,7 +12,7 @@
     <param name="l2_max" value="0.5"/>
     <param name="resolution" value="0.05"/>
     <param name="patch_size" value="32"/>
-    <param name="strategy" value="gm"/>
+    <param name="strategy" value="gn"/>
     <param name="use_map_topic" value="false"/>
     <param name="first_map_only" value="false"/>
     <param name="use_pose_on_new_map" value="false"/>
