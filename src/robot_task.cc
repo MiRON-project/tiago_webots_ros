@@ -46,6 +46,7 @@ void RobotTask::getRobotModel(const std_msgs::String::ConstPtr& name) {
 
 void RobotTask::updateLaserScan(const sensor_msgs::LaserScan& scan) {
   sensor_msgs::LaserScan msg = scan;
+  msg.header.frame_id = "laser_frame";
   std::vector<float> ranges = msg.ranges;
   std::reverse(ranges.begin(), ranges.end());
   msg.ranges = ranges;
@@ -210,6 +211,9 @@ void RobotTask::setTF() const {
   br.sendTransform(transformStamped);
 
   transformStamped.child_frame_id = robot_model_ + "/camera_2D";
+  br.sendTransform(transformStamped);
+
+  transformStamped.child_frame_id = "laser_frame";
   br.sendTransform(transformStamped);
 }
 
