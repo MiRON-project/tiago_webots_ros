@@ -9,7 +9,8 @@
   <license>Apache 2.0</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>backward_ros</depend>
+  <depend>actionlib</depend>
+  <depend>behaviortree_cpp_v3</depend>
   <depend>iris_lama_ros</depend>
   <depend>gmapping</depend>
   <depend>move_base</depend>
@@ -17,6 +18,7 @@
   <depend>roscpp</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>teb_local_planner</depend>
   <depend>tf</depend>
   <depend>webots_ros</depend>
   <depend>xmlrpcpp</depend>
