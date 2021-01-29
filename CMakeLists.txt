@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(catkin REQUIRED COMPONENTS
   backward_ros
+  iris_lama_ros
   gmapping
+  move_base
   pluginlib
   roscpp
   sensor_msgs
@@ -21,7 +23,9 @@ catkin_package(
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS
     backward_ros
+    iris_lama_ros
     gmapping
+    move_base
     pluginlib
     roscpp
     sensor_msgs
