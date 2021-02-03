@@ -6,9 +6,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(catkin REQUIRED COMPONENTS
   actionlib  
+  actionlib_msgs
   behaviortree_cpp_v3
   iris_lama_ros
   gmapping
+  message_generation
   move_base
   pluginlib
   roscpp
@@ -22,14 +24,32 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Boost REQUIRED)
 
+add_message_files(
+  FILES
+    BtState.msg
+)
+
+add_service_files(
+  FILES
+    LoadTree.srv
+)
+
+generate_messages(
+  DEPENDENCIES 
+    actionlib_msgs  
+    std_msgs
+)
+
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS
     actionlib  
+    actionlib_msgs
     behaviortree_cpp_v3
     iris_lama_ros
     gmapping
+    message_runtime 
     move_base
     pluginlib
     roscpp

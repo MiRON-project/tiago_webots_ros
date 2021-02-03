@@ -10,9 +10,11 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>actionlib</depend>
+  <depend>actionlib_msgs</depend>
   <depend>behaviortree_cpp_v3</depend>
   <depend>iris_lama_ros</depend>
   <depend>gmapping</depend>
+  <depend>message_generation</depend>
   <depend>move_base</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
@@ -23,6 +25,9 @@
   <depend>webots_ros</depend>
   <depend>xmlrpcpp</depend>
 
+  <build_export_depend>message_runtime</build_export_depend>
+  <exec_depend>message_runtime</exec_depend>
+  
   <test_depend>rostest</test_depend>
   <test_depend>rosunit</test_depend>
 
