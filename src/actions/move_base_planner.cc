@@ -23,11 +23,7 @@ BT::PortsList MoveBasePlanner::providedPorts() {
 }
 
 void MoveBasePlanner::on_start() {
-  ros::Duration(this->server_timeout_/1000).sleep();
-  if (this->service_name_.empty() && 
-      this->status() != BT::NodeStatus::SUCCESS) {
-    this->setStatus(BT::NodeStatus::FAILURE);
-  }
+  this->service_name_ = "move_base";
 }
 
 void MoveBasePlanner::on_tick() {
