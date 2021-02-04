@@ -2,6 +2,7 @@
 
 // tiago_webots_ros
 #include <tiago_webots_ros/actions/planner_node.h>
+#include <tiago_webots_ros/ros_bt_ports.h>
 
 // ros
 #include <nav_msgs/Path.h>
@@ -14,7 +15,6 @@ namespace tiago_behaviour_tree {
 class MoveBasePlanner : public PlannerNode<move_base_msgs::MoveBaseAction, 
   geometry_msgs::PoseStamped> {
 protected:
-  std::string type;
   nav_msgs::Path executed_path_;
 
 public:

@@ -8,13 +8,10 @@ MoveBasePlanner::MoveBasePlanner(const std::string &name,
     const std::shared_ptr<ros::NodeHandle>& nh) : 
   PlannerNode<move_base_msgs::MoveBaseAction, geometry_msgs::PoseStamped>(
     name, config, nh)
-{
-  this->getInput("type", type);
-}
+{}
 
 BT::PortsList MoveBasePlanner::providedPorts() {
   BT::PortsList addition = {
-    BT::InputPort<std::string>("type"),
     BT::OutputPort<nav_msgs::Path>("executed_path"),
     BT::OutputPort<actionlib::SimpleClientGoalState>("planner_result")
   };
