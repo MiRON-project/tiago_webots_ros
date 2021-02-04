@@ -287,7 +287,7 @@ void RobotTask::enableWheel(bool enable) {
     rightWheelPositionClient.call(wheelSrv);
 
     // add subscriber to cmd_vel
-    cmd_vel_sub_ = nh_.subscribe(robot_model_ + "/cmd_vel", 100, 
+    cmd_vel_sub_ = nh_.subscribe("/cmd_vel", 100, 
       &RobotTask::updateVel, this);
     
     odom_enabled = true;
