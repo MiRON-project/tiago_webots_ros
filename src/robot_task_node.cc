@@ -1,5 +1,6 @@
 // tiago_webots_ros
 #include <tiago_webots_ros/robot_task.h>
+#include <tiago_webots_ros/executor_bt.h>
 
 // std
 #include <signal.h>
@@ -26,8 +27,9 @@ int main(int argc, char **argv) {
   ros::AsyncSpinner spinner(0);
   spinner.start();
 
-  ros::NodeHandle nh;
-  tiago_webots_ros::RobotTask robot(nh);
+  std::shared_ptr<ros::NodeHandle> nh = std::make_shared<ros::NodeHandle>();
+  tiago_webots_ros::RobotTask robot(*nh);
+  tiago_webots_ros::tiago_behaviour_tree::ExecutorBT tree_loader(nh);
   while (!killed) {
     ros::Duration(0.1).sleep();
   };

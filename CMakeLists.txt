@@ -71,7 +71,11 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME} src/robot_task.cc)
+add_library(${PROJECT_NAME} 
+  src/actions/move_base_planner.cc
+  src/robot_task.cc
+  src/executor_bt.cc
+)
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
