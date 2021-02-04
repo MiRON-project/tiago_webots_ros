@@ -49,8 +49,7 @@ class PlannerNode : public BT::CoroActionNode
       }
     }
 
-    static BT::PortsList providedBasicPorts(BT::PortsList addition)
-    {
+    static BT::PortsList providedBasicPorts(BT::PortsList addition) {
       BT::PortsList basic = 
       {
         BT::InputPort<double>("server_timeout"),
@@ -60,13 +59,11 @@ class PlannerNode : public BT::CoroActionNode
       return basic;
     }
 
-    static BT::PortsList providedPorts()
-    {
+    static BT::PortsList providedPorts() {
       return providedBasicPorts({});
     }
 
-    BT::NodeStatus tick() override
-    {
+    BT::NodeStatus tick() override {
       on_start();
       if (status() == BT::NodeStatus::FAILURE) {
         return status();
@@ -116,6 +113,7 @@ class PlannerNode : public BT::CoroActionNode
           return on_failure();
         }
       }
+      return status();
     }
 
     void halt() override

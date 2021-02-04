@@ -60,7 +60,8 @@ void MoveBasePlanner::on_new_goal_received() {
   action_client_->sendGoal(goal, 
     boost::bind(&MoveBasePlanner::doneCb, this, _1),
     boost::bind(&MoveBasePlanner::activeCb, this),
-    boost::bind(&MoveBasePlanner::feedbackCb, this, _1));
+    boost::bind(&MoveBasePlanner::feedbackCb, this, _1)
+  );
 }
 
 } // namespace tiago_behaviour_tree
