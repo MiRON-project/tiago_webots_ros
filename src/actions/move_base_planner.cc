@@ -38,8 +38,9 @@ void MoveBasePlanner::doneCb(const actionlib::SimpleClientGoalState& state) {
 void MoveBasePlanner::activeCb() {
 }
 
-void MoveBasePlanner::feedbackCb(const geometry_msgs::PoseStamped& feedback) {
-  executed_path_.poses.push_back(feedback);
+void MoveBasePlanner::feedbackCb(const 
+    move_base_msgs::MoveBaseFeedbackConstPtr& feedback) {
+  executed_path_.poses.push_back(feedback->base_position);
   setOutput("executed_path", executed_path_);
 }
 

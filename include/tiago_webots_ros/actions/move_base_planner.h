@@ -25,14 +25,14 @@ public:
 
 protected:
   void on_start() override;
-  virtual void on_tick() override {}
+  virtual void on_tick() override;
   void init(const geometry_msgs::PoseStamped& goal);
   void on_new_goal_received() override;
 
 private:
   void doneCb(const actionlib::SimpleClientGoalState& state);
   void activeCb();
-  void feedbackCb(const geometry_msgs::PoseStamped& feedback);
+  void feedbackCb(const move_base_msgs::MoveBaseFeedbackConstPtr& feedback);
   
 };
 
